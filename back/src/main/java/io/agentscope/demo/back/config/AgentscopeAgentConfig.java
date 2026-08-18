@@ -4,7 +4,8 @@ import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.demo.back.metar.MetarTafDecodeTool;
-import io.agentscope.extensions.model.dashscope.DashScopeChatModel;
+import io.agentscope.extensions.model.ollama.OllamaChatModel;
+import io.agentscope.extensions.model.ollama.options.OllamaOptions;
 import io.agentscope.extensions.postgresql.state.PostgresAgentStateStore;
 import io.agentscope.spring.boot.agui.common.AguiAgentId;
 import javax.sql.DataSource;
@@ -15,9 +16,14 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Wires the agentscope-java v2 METAR/TAF decoding agent.
  *
- * <p>Builds a {@link ReActAgent} named {@code metar-taf-decoder} whose model provider
- * (DashScope by default) is configurable via environment variables, and which persists
- * its conversational state through {@link PostgresAgentStateStore}.</p>
+ * <p>Builds a {@link ReActAgent} named {@code metar-taf-decoder} running on a <b>local
+ * Ollama</b> model (default {@code qwen3:8b}) served by the Ollama HTTP API, and which
+ * persists its conversational state through {@link PostgresAgentStateStore}.</p>
+ *
+ * <p>Ollama is fully local: <b>no API key is required</b>. The endpoint
+ * ({@code baseUrl}, default {@code http://localhost:11434}) and model name are
+ * configurable via environment variables so the same image works in dev and inside
+ * docker-compose (where Ollama is reached through {@code host.docker.internal}).</p>
  *
  * <p>The agent is automatically registered into the AG-UI agent registry by
  * {@code io.agentscope.spring.boot.agui.common.AguiAgentAutoRegistration}, which scans
@@ -32,12 +38,18 @@ public class AgentscopeAgentConfig {
 
     @Bean
     public Model metarTafModel(
-            @Value("${agentscope.model.name:qwen-plus}") String modelName,
-            @Value("${DASHSCOPE_API_KEY:}") String apiKey) {
-        return DashScopeChatModel.builder()
+            @Value("${agentscope.model.name:qwen3:8b}") String modelName,
+            @Value("${OLLAMA_BASE_URL:http://localhost:11434}") String baseUrl,
+            @Value("${OLLAMA_NUM_CTX:16384}") int numCtx,
+            @Value("${OLLAMA_TEMPERATURE:0.3}") double temperature) {
+        return OllamaChatModel.builder()
             .modelName(modelName)
-            .apiKey(apiKey)
+            .baseUrl(baseUrl)
             .stream(true)
+            .defaultOptions(OllamaOptions.builder()
+                .numCtx(numCtx)
+                .temperature(temperature)
+                .build())
             .build();
     }
 

@@ -27,9 +27,12 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      # L'API key n'est JAMAIS hardcodée : elle vient de l'environnement de l'hôte.
-      # Fournir via `DASHSCOPE_API_KEY=... docker compose up` ou un fichier .env.
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      # Modèle LLM local via Ollama (hosting servi par l'hôte, aucun API key requis).
+      # Depuis le conteneur back, on joint l'Ollama de la machine hôte via
+      # host.docker.internal (Docker Desktop). Modèle ajustable via OLLAMA_MODEL.
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
+      OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-16384}
       POSTGRES_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-agentscope}
       POSTGRES_USER: ${POSTGRES_USER:-agentscope}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentscope}

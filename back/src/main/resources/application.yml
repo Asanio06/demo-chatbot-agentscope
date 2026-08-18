@@ -22,9 +22,10 @@ agentscope:
     system-prompt: "${METAR_SYSTEM_PROMPT:}"
     max-iters: 5
   model:
-    # Model provider, resolved by the dashscope extension. The API key is ALWAYS
-    # injected via environment variable - never committed.
-    provider: dashscope
+    # Local model served by Ollama (see AgentscopeAgentConfig). Provider is a plain
+    # (Ollama-native) chat model — no API key, no cloud account.
+    provider: ollama
+    name: ${OLLAMA_MODEL:qwen3:8b}
   agui:
     # Expose the agentscope AG-UI runtime under the CopilotKit v2 runtime URL
     path-prefix: /api/copilotkit

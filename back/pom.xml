@@ -71,10 +71,10 @@
             <version>${agentscope.version}</version>
         </dependency>
 
-        <!-- agentscope-java: model provider (DashScope example; keep configurable via env) -->
+        <!-- agentscope-java: model provider (Ollama local — see AgentscopeAgentConfig) -->
         <dependency>
             <groupId>io.agentscope</groupId>
-            <artifactId>agentscope-extensions-model-dashscope</artifactId>
+            <artifactId>agentscope-extensions-model-ollama</artifactId>
             <version>${agentscope.version}</version>
         </dependency>
 

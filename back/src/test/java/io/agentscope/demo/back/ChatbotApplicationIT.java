@@ -40,9 +40,8 @@ class ChatbotApplicationIT {
     static void props(DynamicPropertyRegistry registry) {
         registry.add("agentscope.agui.path-prefix", () -> "/api/copilotkit");
         registry.add("agentscope.agui.default-agent-id", () -> AgentscopeAgentConfig.AGENT_ID);
-        // A key is required to construct the model bean; the context test only validates
-        // wiring, no model call is performed, so a dummy value is sufficient.
-        registry.add("DASHSCOPE_API_KEY", () -> "test-dummy-key-for-context-it");
+        // Ollama is local (no API key). The context test only validates wiring — no model
+        // call is performed — so the default OLLAMA_BASE_URL (localhost:11434) is never hit.
     }
 
     @Autowired
