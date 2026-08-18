@@ -30,6 +30,21 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--
+          Pont officiel Jackson 2 pour Spring Boot 4.
+          agentscope-java 2.0.2 est bâti contre Jackson 2 : ses modèles AG-UI
+          (io.agentscope.core.agui.model.*) sont annotés avec les annotations Jackson 2,
+          or Spring Boot 4 s'appuie par défaut sur Jackson 3 (spring-boot-jackson) qui ne
+          les lit pas. Ce module active Jackson2AutoConfiguration -> un ObjectMapper Jackson 2
+          + le converter MVC Jackson 2, ce qui répare la désérialisation JSON des requêtes
+          AG-UI (/api/copilotkit) sans toucher au reste de l'app (Jackson 3 reste par ailleurs).
+          Version gérée par le parent spring-boot-starter-parent.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
+        </dependency>
+
         <!-- JDBC / DataSource support (for PostgresAgentStateStore wiring) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
