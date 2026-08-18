@@ -19,8 +19,16 @@
 import { HttpAgent } from '@ag-ui/client'
 import type { Message } from '@ag-ui/client'
 
-/** URL du runtime AG-UI backend (mappé par le back vers agentscope AG-UI). */
-export const RUNTIME_URL = '/api/copilotkit'
+/**
+ * URL du runtime AG-UI backend.
+ *
+ * @ag-ui/client v0.0.57 (CopilotKit v2) POSTe le `RunAgentInput` **directement sur
+ * l'URL du HttpAgent** (`fetch(this.url)`), sans y ajouter `/run`. Le back agentscope
+ * expose son run AG-UI sous `{path-prefix}/run` (= `/api/copilotkit/run`), donc le
+ * HttpAgent doit pointer vers ce endpoint run, pas vers la racine du path-prefix
+ * (POSTer sur `/api/copilotkit` nu renverrait 404).
+ */
+export const RUNTIME_URL = '/api/copilotkit/run'
 
 /**
  * Instructions système (français), portées par l'agent en tant que message
