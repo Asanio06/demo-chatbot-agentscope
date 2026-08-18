@@ -1,0 +1,32 @@
+{
+  "name": "front",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "smoke:browser": "node scripts/smoke-browser.mjs"
+  },
+  "dependencies": {
+    "@copilotkit/react-core": "^1.68.1",
+    "@copilotkit/react-ui": "^1.68.1",
+    "antd": "^6.6.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "jsdom": "^26.1.0",
+    "oxlint": "^1.75.0",
+    "playwright-core": "^1.62.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0"
+  }
+}

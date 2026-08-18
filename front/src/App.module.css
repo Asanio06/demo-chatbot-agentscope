@@ -1,0 +1,95 @@
+/* App — styles globaux de layout (CSS module) */
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef3fb 0%, #f8fafd 100%);
+}
+
+.header {
+  background: linear-gradient(90deg, #102a43 0%, #1d4e89 100%);
+  padding-inline: 24px;
+  height: auto;
+  line-height: normal;
+}
+
+.headerInner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-block: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 26px;
+}
+
+.brandTitle {
+  color: #ffffff !important;
+  margin: 0 !important;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.headerTagline {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  text-align: right;
+}
+
+.content {
+  padding: 32px 24px 56px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.introTitle {
+  margin-bottom: 8px !important;
+  color: #102a43;
+  font-weight: 700;
+}
+
+.introText {
+  color: rgba(16, 42, 67, 0.78);
+  max-width: 620px;
+  margin-inline: auto;
+  font-size: 15px;
+}
+
+.tag {
+  border-radius: 8px;
+  background: #e6f0fb;
+  color: #1d4e89;
+  border-color: #bcd3ea;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .headerInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerTagline {
+    text-align: left;
+  }
+
+  .content {
+    padding: 24px 16px 40px;
+  }
+}
