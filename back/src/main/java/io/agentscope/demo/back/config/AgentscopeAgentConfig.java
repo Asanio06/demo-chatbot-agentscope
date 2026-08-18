@@ -2,6 +2,8 @@ package io.agentscope.demo.back.config;
 
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.tool.Toolkit;
+import io.agentscope.demo.back.metar.MetarTafDecodeTool;
 import io.agentscope.extensions.model.dashscope.DashScopeChatModel;
 import io.agentscope.extensions.postgresql.state.PostgresAgentStateStore;
 import io.agentscope.spring.boot.agui.common.AguiAgentId;
@@ -48,34 +50,42 @@ public class AgentscopeAgentConfig {
             .build();
     }
 
+    /**
+     * Registers the tested {@link MetarTafDecodeTool} (backed by {@code MetarTafDecoder})
+     * as an invocable tool of the agent. The ReAct loop may then call
+     * {@code decode_metar_taf} so METAR/TAF decoding runs through the deterministic Java
+     * rules (covered by {@code MetarTafDecoderTest}) instead of purely by the LLM.
+     */
+    @Bean
+    public Toolkit metarTafToolkit(MetarTafDecodeTool decodeTool) {
+        Toolkit toolkit = new Toolkit();
+        toolkit.registration().tool(decodeTool).apply();
+        return toolkit;
+    }
+
     @Bean
     @AguiAgentId(AGENT_ID)
-    public ReActAgent metarTafAgent(Model metarTafModel, PostgresAgentStateStore postgresAgentStateStore) {
+    public ReActAgent metarTafAgent(
+            Model metarTafModel,
+            PostgresAgentStateStore postgresAgentStateStore,
+            Toolkit metarTafToolkit) {
         return ReActAgent.builder()
             .name(AGENT_ID)
             .description("Agent conversationnel qui décode les bulletins météo aviation METAR et TAF.")
+            .toolkit(metarTafToolkit)
             .sysPrompt("""
                 Tu es un assistant météo aviation spécialisé dans le décodage des bulletins \
                 METAR et TAF bruts.
 
-                Quand un utilisateur te colle un METAR ou un TAF brut, restitue un décodage \
-                structuré et lisible, en français, avec les informations suivantes si elles \
-                sont présentes :
-                - Aéroport (code OACI, ex. LFPG)
-                - Heure (ex. jour 18 à 15:00 UTC)
-                - Vent (direction ° / vitesse kt, + rafales si G..)
-                - Visibilité (ex. 9999 = 10 km+, CAVOK)
-                - Nuages (FEW/SCT/BKN/OVC + altitude en centaines de pieds)
-                - Température / point de rosée (ex. 24/15)
-                - Pression QNH (ex. Q1015 = 1015 hPa)
-                - Temps présent (-RA, TS, SN, FG...) si présent
-                - Tendance (NOSIG, BECMG, TEMPO...) si présente
+                IMPORTANT : quand un utilisateur te colle un bulletin METAR ou TAF brut, \
+                tu DOIS utiliser l'outil « decode_metar_taf » avec le bulletin comme \
+                argument « bulletin ». C'est cet outil qui produit le décodage structuré \
+                (règles Java déterministes). Restitue ensuite ce décodage à l'utilisateur \
+                tel quel, proprement.
 
-                Conserve uniquement les termes aéronautiques standard (METAR, TAF, OACI, \
-                QNH, CAVOK...) en anglais ; le reste en français.
-
-                Si le texte fourni ne ressemble pas à un bulletin METAR ou TAF, réponds \
-                clairement « Bulletin non reconnu » sans inventer de données.""")
+                Si l'outil répond « Bulletin non reconnu » ou que le texte fourni ne \
+                ressemble pas à un bulletin METAR ou TAF, réponds clairement \
+                « Bulletin non reconnu » sans inventer de données.""")
             .model(metarTafModel)
             .stateStore(postgresAgentStateStore)
             .build();

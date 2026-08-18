@@ -50,9 +50,14 @@ public class MetarTafDecoder {
             throw new IllegalArgumentException("Bulletin vide ou null : bulletin non reconnu");
         }
 
-        Matcher airport = AIRPORT.matcher(raw);
-        // first token is usually the airport; prefer the leading 4-letter group if present
-        String airportCode = airport.find() ? airport.group() : null;
+        // The airport ICAO code is the FIRST token of a METAR/TAF bulletin. Anchor on the
+        // first whitespace-delimited token rather than the first 4-letter word anywhere,
+        // so a later 4-letter group (e.g. a cloud bank code) can never shadow it.
+        String airportCode = null;
+        String firstToken = raw.trim().split("\\s+")[0];
+        if (AIRPORT.matcher(firstToken).matches()) {
+            airportCode = firstToken;
+        }
 
         // Time: DD HH MM Z -> "jour DD à HH:MM UTC"
         String issuedAt = null;
@@ -154,6 +159,14 @@ public class MetarTafDecoder {
         if (raw == null || raw.isBlank()) {
             return "n/a";
         }
-        return raw.startsWith("M") ? "-" + raw.substring(1) : raw;
+        // M05 -> -5, M10 -> -10 (strip leading zeros so we never show "-05°C")
+        if (raw.startsWith("M")) {
+            return "-" + Integer.parseInt(raw.substring(1));
+        }
+        // Positive two-digit temps (e.g. 07) -> drop the leading zero for a natural display
+        if (raw.length() == 2 && raw.charAt(0) == '0') {
+            return String.valueOf(raw.charAt(1));
+        }
+        return raw;
     }
 }

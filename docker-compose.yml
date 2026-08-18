@@ -1,0 +1,49 @@
+# Demo chatbot METAR/TAF - orchestration complète.
+# « docker compose up » lance postgres + back + front en un seul commande.
+#   - postgres : persistance d'état agentscope (PostgresAgentStateStore)
+#   - back     : Spring Boot 4 + agentscope-java v2, AG-UI sous /api/copilotkit
+#   - front    : build Vite servi par nginx, proxy /api -> back
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agentscope}
+      POSTGRES_USER: ${POSTGRES_USER:-agentscope}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentscope}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentscope} -d ${POSTGRES_DB:-agentscope}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  back:
+    build:
+      context: ./back
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # L'API key n'est JAMAIS hardcodée : elle vient de l'environnement de l'hôte.
+      # Fournir via `DASHSCOPE_API_KEY=... docker compose up` ou un fichier .env.
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-agentscope}
+      POSTGRES_USER: ${POSTGRES_USER:-agentscope}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentscope}
+      SERVER_PORT: "8080"
+    ports:
+      - "8080:8080"
+
+  front:
+    build:
+      context: ./front
+    depends_on:
+      - back
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:

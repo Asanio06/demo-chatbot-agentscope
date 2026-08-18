@@ -69,7 +69,7 @@ class MetarTafDecoderTest {
     void decodesNegativeTemperature() {
         MetarDecoding decoding = decoder.decode("LFPG 181500Z 24012KT 9999 SCT040 M05/M10 Q1015");
 
-        assertThat(decoding.temperatures()).isEqualTo("-05°C / -10°C");
+        assertThat(decoding.temperatures()).isEqualTo("-5°C / -10°C");
     }
 
     @Test
