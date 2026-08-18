@@ -85,20 +85,21 @@ cd .. && python scripts/e2e_metar_chatbot.py http://localhost:8080
 
 ### Test d'intégration Ollama+Testcontainers (`OllamaAgentIT`)
 
-Le test JUnit `OllamaAgentIT` est un **vrai E2E automatisé** : il lance un conteneur
-**`ollama/ollama`** (Testcontainers) en *bind-mount* du store local (`~/.ollama/models`
-→ re-utilise `qwen3:8b` déjà téléchargé, zéro re-download) + un Postgres Testcontainers +
-le back complet, puis valide de **petits cas** via `/api/copilotkit/run` :
+Le test JUnit `OllamaAgentIT` est un **vrai E2E automatisé et portable** (CI-ready) : il lance un
+conteneur **`ollama/ollama`** (Testcontainers, GPU-ready) qui **pull lui-même** un petit modèle
+(défaut `qwen3:0.6b` — aucun recours au store local) + un Postgres Testcontainers + le back
+complet, puis valide de **petits cas** via `/api/copilotkit/run` :
 
-- METAR valide → l'agent déclenche `decode_metar_taf`, le décodage structuré est présent ;
+- METAR valide → l'agent déclenche `decode_metar_taf`, le décodage est relayé (code OACI) ;
 - texte non-aéro → réponse « bulletin non reconnu » (rien d'inventé).
 
 ```bash
 cd back && mvn test -Dtest=OllamaAgentIT
 ```
 
-> Notes : nécessite Docker ; `OLLAMA_TEST_MODEL` (défaut `qwen3:8b`) pour changer de modèle.
-> Le conteneur est GPU-ready (DeviceRequest nvidia auto) avec repli CPU.
+> Notes : nécessite Docker. `OLLAMA_TEST_MODEL` (défaut `qwen3:0.6b`) pour changer de modèle —
+> ex. `qwen3:8b` pour un tool-calling plus fiable (le petit modèle portable peut varier sur
+> l'invocation d'outil). Le pull est idempotent (ne re-télécharge pas si déjà présent).
 
 ## Branches
 
