@@ -1,0 +1,39 @@
+# Demo METAR/TAF chatbot backend - Spring Boot 4 + agentscope-java v2
+spring:
+  application:
+    name: demo-chatbot-agentscope-back
+  datasource:
+    # Postgres used by PostgresAgentStateStore (set real values in prod via env / docker compose)
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/agentscope}
+    username: ${POSTGRES_USER:agentscope}
+    password: ${POSTGRES_PASSWORD:agentscope}
+    hikari:
+      maximum-pool-size: 5
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# agentscope-java v2 configuration
+agentscope:
+  # The agent is fully defined in code (see AgentscopeAgentConfig); keep the
+  # auto-configured defaults focused on what is required.
+  agent:
+    name: metar-taf-decoder
+    system-prompt: "${METAR_SYSTEM_PROMPT:}"
+    max-iters: 5
+  model:
+    # Model provider, resolved by the dashscope extension. The API key is ALWAYS
+    # injected via environment variable - never committed.
+    provider: dashscope
+  agui:
+    # Expose the agentscope AG-UI runtime under the CopilotKit v2 runtime URL
+    path-prefix: /api/copilotkit
+    default-agent-id: metar-taf-decoder
+    cors-enabled: ${AGUI_CORS_ENABLED:true}
+    cors-allowed-origins: ${AGUI_CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+    server-side-memory: true
+
+logging:
+  level:
+    io.agentscope: INFO
+    org.testcontainers: INFO
