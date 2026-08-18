@@ -62,6 +62,9 @@ const systemInstructionMessage: Message = {
 export const demoAgents: Record<string, HttpAgent> = {
   'demo:decode-metar': new HttpAgent({
     agentId: 'demo:decode-metar',
+    // threadId requis par le serveur AG-UI (agentscope exige un threadId non-null).
+    // Démo = une conversation par type de bulletin (fil stable).
+    threadId: 'demo-thread-metar',
     description:
       'Décode un bulletin METAR (météo aviation) brut : aéroport, heure, vent, ' +
       'visibilité, nuages, température/rosée, QNH, temps présent et tendance.',
@@ -70,6 +73,7 @@ export const demoAgents: Record<string, HttpAgent> = {
   }),
   'demo:decode-taf': new HttpAgent({
     agentId: 'demo:decode-taf',
+    threadId: 'demo-thread-taf',
     description:
       'Décode un bulletin TAF (prévision météo aviation) brut : période de validité, ' +
       'vent, visibilité, nuages, temps et évolution (prob / tempo / becoming).',
