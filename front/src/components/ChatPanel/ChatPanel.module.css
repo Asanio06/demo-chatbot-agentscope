@@ -76,6 +76,16 @@
   overflow: hidden;
 }
 
+/* État de repli pendant la synchro du runtime AG-UI */
+.connectingNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
   .panelHeader {
     flex-direction: column;

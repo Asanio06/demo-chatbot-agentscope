@@ -5,8 +5,9 @@
  * Il regroupe :
  * - un sélecteur d'agent démo (AntD `Select`) qui bascule l'agent actif ;
  * - `useAgent({ agentId })` : bind l'agent sélectionné (v2) pour `CopilotChat` ;
- * - `<CopilotChat>` : composant tout-en-un de `@copilotkit/react-ui`
- *   (messages, input, suggestions, streaming) — UI de chat pré-construite.
+ * - `<CopilotChat>` : composant tout-en-un de `@copilotkit/react-core/v2`
+ *   (messages, input, suggestions, streaming) — UI de chat pré-construite,
+ *   bindé à l'agent actif via la prop explicite `agentId`.
  *
  * Le tout est enveloppé dans une `Card` AntD stylée par CSS module.
  */
@@ -16,8 +17,10 @@ import {
   type ReactElement,
 } from 'react'
 import { Card, Select, Space, Typography } from 'antd'
-import { useAgent } from '@copilotkit/react-core/v2'
-import { CopilotChat } from '@copilotkit/react-ui'
+import {
+  useAgent,
+  CopilotChat,
+} from '@copilotkit/react-core/v2'
 import {
   demoAgentIds,
   SAMPLE_METAR,
@@ -26,18 +29,6 @@ import {
 import styles from './ChatPanel.module.css'
 
 const { Text } = Typography
-
-/** Instructions système (français), injectées dans le message système du chat. */
-const CHAT_INSTRUCTIONS = [
-  'Tu es un assistant météo aéronautique spécialisé dans le décodage des bulletins',
-  'METAR et TAF. Quand l’utilisateur colle un bulletin brut, restitue un décodage',
-  'structuré et lisible : code OACI, heure (jour + heure UTC), vent (direction/vitesse',
-  'et rafales), visibilité, nuages (FEW/SCT/BKN/OVC + altitude en centaines de pieds),',
-  'température/point de rosée, pression QNH, temps présent et tendance (NOSIG, ...).',
-  'Réponds en français, conserve les termes techniques METAR/TAF en anglais.',
-  'Si le bulletin est malformé ou inconnu, réponds explicitement "bulletin non reconnu"',
-  'sans inventer de données.',
-].join(' ')
 
 export interface ChatPanelProps {
   /** Sélecteur d'agent rendu en haut du panneau (pour flexibilité des tests). */
@@ -60,7 +51,7 @@ function DefaultAgentSelector({
   }))
 
   return (
-    <Space direction="vertical" size={2} className={styles.agentSelectorWrap}>
+    <Space orientation="vertical" size={2} className={styles.agentSelectorWrap}>
       <label htmlFor="agent-select" className={styles.agentSelectorLabel}>
         Agent démo
       </label>
@@ -82,14 +73,22 @@ export default function ChatPanel({
 }: ChatPanelProps): ReactElement {
   const [activeAgent, setActiveAgent] = useState<string>(demoAgentIds[0] ?? '')
 
-  // Bind l'agent démo actif (v2) : c'est lui que CopilotChat exécutera.
-  useAgent({ agentId: activeAgent })
+  // L'agent actif retombe toujours sur un agent de démo connu (jamais sur un
+  // id inexistant) : si la sélection pointe vers un agent non enregistré, on
+  // re-bascule sur le premier agent démo. Évite le fallback CopilotKit vers
+  // 'default' (agent absent) qui faisait lever « Agent not found after runtime
+  // sync » et vider l'UI du chat.
   const agentIdSafe = (demoAgentIds.includes(activeAgent)
     ? activeAgent
     : demoAgentIds[0]) as DemoAgentKey
 
+  // Bind l'agent démo actif (v2). `isReady` est false pendant la synchro du
+  // runtime AG-UI distant : on s'en sert pour afficher un état de repli propre
+  // plutôt que de laisser un agent provisoire envoyer / l'UI se vider.
+  const { isReady } = useAgent({ agentId: agentIdSafe })
+
   return (
-    <Card className={styles.panel} bordered={false}>
+    <Card className={styles.panel} variant="borderless">
       <div className={styles.panelHeader}>
         <div>
           <Text strong className={styles.title}>
@@ -110,12 +109,19 @@ export default function ChatPanel({
       </div>
 
       <div className={styles.chat}>
-        <CopilotChat
-          instructions={CHAT_INSTRUCTIONS}
-          labels={{
-            placeholder: 'Ex. : LFPG 181500Z 24012KT 9999 SCT040 17/06 Q1015 NOSIG',
-          }}
-        />
+        {isReady ? (
+          <CopilotChat
+            agentId={agentIdSafe}
+            labels={{
+              chatInputPlaceholder:
+                'Ex. : LFPG 181500Z 24012KT 9999 SCT040 17/06 Q1015 NOSIG',
+            }}
+          />
+        ) : (
+          <Text type="secondary" className={styles.connectingNote}>
+            Connexion au runtime de l’assistant…
+          </Text>
+        )}
       </div>
     </Card>
   )

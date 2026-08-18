@@ -9,13 +9,40 @@
  *   passer par un runtime distant. Utile pour faire tourner/déboguer l'UI en
  *   l'absence (ou en marge) du back complet.
  *
+ * Chaque agent porte ses instructions système (message système initial AG-UI) :
+ * c'est le moyen v2 (client AG-UI) d'injecter la personnalité du chat, la prop
+ * `instructions` de l'ancien `CopilotChat` v1 n'existant plus en v2.
+ *
  * @note DEV ONLY : ne jamais utiliser en production. Le runtime réel fournit
  *       les agents serveur (agentscope AG-UI) qui prennent le dessus.
  */
 import { HttpAgent } from '@ag-ui/client'
+import type { Message } from '@ag-ui/client'
 
 /** URL du runtime AG-UI backend (mappé par le back vers agentscope AG-UI). */
 export const RUNTIME_URL = '/api/copilotkit'
+
+/**
+ * Instructions système (français), portées par l'agent en tant que message
+ * système initial (injecté en tête de conversation par le runtime AG-UI).
+ */
+export const CHAT_INSTRUCTIONS = [
+  'Tu es un assistant météo aéronautique spécialisé dans le décodage des bulletins',
+  'METAR et TAF. Quand l’utilisateur colle un bulletin brut, restitue un décodage',
+  'structuré et lisible : code OACI, heure (jour + heure UTC), vent (direction/vitesse',
+  'et rafales), visibilité, nuages (FEW/SCT/BKN/OVC + altitude en centaines de pieds),',
+  'température/point de rosée, pression QNH, temps présent et tendance (NOSIG, ...).',
+  'Réponds en français, conserve les termes techniques METAR/TAF en anglais.',
+  'Si le bulletin est malformé ou inconnu, réponds explicitement "bulletin non reconnu"',
+  'sans inventer de données.',
+].join(' ')
+
+/** Message système initial transmis à chaque agent de démo. */
+const systemInstructionMessage: Message = {
+  id: 'system-instructions',
+  role: 'system',
+  content: CHAT_INSTRUCTIONS,
+}
 
 /**
  * Registre d'agents de démo, consommé par la prop `agents__unsafe_dev_only`
@@ -31,6 +58,7 @@ export const demoAgents: Record<string, HttpAgent> = {
       'Décode un bulletin METAR (météo aviation) brut : aéroport, heure, vent, ' +
       'visibilité, nuages, température/rosée, QNH, temps présent et tendance.',
     url: RUNTIME_URL,
+    initialMessages: [systemInstructionMessage],
   }),
   'demo:decode-taf': new HttpAgent({
     agentId: 'demo:decode-taf',
@@ -38,6 +66,7 @@ export const demoAgents: Record<string, HttpAgent> = {
       'Décode un bulletin TAF (prévision météo aviation) brut : période de validité, ' +
       'vent, visibilité, nuages, temps et évolution (prob / tempo / becoming).',
     url: RUNTIME_URL,
+    initialMessages: [systemInstructionMessage],
   }),
 }
 
