@@ -83,6 +83,23 @@ cd front && npm ci && npm run build && npm run lint
 cd .. && python scripts/e2e_metar_chatbot.py http://localhost:8080
 ```
 
+### Test d'intégration Ollama+Testcontainers (`OllamaAgentIT`)
+
+Le test JUnit `OllamaAgentIT` est un **vrai E2E automatisé** : il lance un conteneur
+**`ollama/ollama`** (Testcontainers) en *bind-mount* du store local (`~/.ollama/models`
+→ re-utilise `qwen3:8b` déjà téléchargé, zéro re-download) + un Postgres Testcontainers +
+le back complet, puis valide de **petits cas** via `/api/copilotkit/run` :
+
+- METAR valide → l'agent déclenche `decode_metar_taf`, le décodage structuré est présent ;
+- texte non-aéro → réponse « bulletin non reconnu » (rien d'inventé).
+
+```bash
+cd back && mvn test -Dtest=OllamaAgentIT
+```
+
+> Notes : nécessite Docker ; `OLLAMA_TEST_MODEL` (défaut `qwen3:8b`) pour changer de modèle.
+> Le conteneur est GPU-ready (DeviceRequest nvidia auto) avec repli CPU.
+
 ## Branches
 
 Livré sur **`feat/integration-docker`** (branche unique d'intégration poussée sur
