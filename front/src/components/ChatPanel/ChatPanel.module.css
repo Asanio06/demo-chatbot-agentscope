@@ -1,0 +1,87 @@
+/* ChatPanel — styles (CSS module, conventions BEM-ish) */
+
+.panel {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--panel-bg, #ffffff);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(15, 42, 84, 0.1);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.title {
+  display: block;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.subtitle {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+/* Sélecteur d'agent */
+.agentSelectorWrap {
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+.agentSelectorLabel {
+  font-size: 12px;
+  color: var(--text-secondary, rgba(60, 60, 67, 0.6));
+  padding-inline: 2px;
+}
+
+.agentSelect {
+  width: 180px;
+}
+
+/* Exemple de bulletin cliquable / copiable */
+.example {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: var(--example-bg, #f6f8fb);
+  border: 1px dashed var(--example-border, #d0d7e2);
+  border-radius: 10px;
+}
+
+.exampleLabel {
+  font-size: 13px;
+}
+
+.exampleCode {
+  font-size: 13px;
+}
+
+/* Zone de chat */
+.chat {
+  height: 460px;
+  border: 1px solid var(--chat-border, #e4e8f0);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .panelHeader {
+    flex-direction: column;
+  }
+
+  .chat {
+    height: 420px;
+  }
+}
